@@ -1,0 +1,22 @@
+# Scraping output
+out.txt
+
+# Build files
+crawler.egg-info/
+crawler.egg-info/
+build/
+dist/
+
+# IDE files
+.idea/
+.vs/
+**/__pycache__/
+
+# Virtual environment
+venv/
+Lib/
+Scripts/
+doc/
+src/
+pip-selfcheck.json
+pyvenv.cfg
