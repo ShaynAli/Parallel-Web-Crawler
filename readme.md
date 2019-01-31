@@ -1,6 +1,6 @@
 # Parallel Web Crawler
 
-A simple web crawler.
+A simple web crawler, originally made for CS 4438.
 
 Please open an issue on Github if you encounter errors or would like to
 request a feature.
