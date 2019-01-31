@@ -1,5 +1,5 @@
 # Scraping output
-out_graph.txt
+*.out
 
 # Build files
 crawler.egg-info/
@@ -23,4 +23,5 @@ pyvenv.cfg
 
 # Other
 *.docx
+*.pdf
 *.tmp

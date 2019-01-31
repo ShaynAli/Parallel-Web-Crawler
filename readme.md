@@ -22,8 +22,8 @@ python .\crawler.py [origin_url [output_file_name [statistics_file_name [max_n_l
 
 Default values:
 * origin = 'https://www.wikipedia.org/'
-* output_file_name = 'out_graph.txt'
-* statistics_file_name = 'out_stats.txt'
+* output_file_name = 'graph.out'
+* statistics_file_name = 'stats.out'
 * max_n_links = 100
 * timeout = 60
 * max_n_threads = 10

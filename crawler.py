@@ -11,16 +11,11 @@ import networkx as nx
 from matplotlib import pyplot as plt
 
 default_origin = 'https://www.wikipedia.org/'
-default_output_file_name = 'out_graph.txt'
-default_statistics_file_name = 'out_stats.txt'
+default_output_file_name = 'graph.out'
+default_statistics_file_name = 'stats.out'
 default_max_n_links = 100
 default_timeout = 60
 default_max_n_threads = 10
-
-'''
-Usage:
-python ./crawler.py [origin_url [output_file_name [max_n_links [timeout [max_n_threads]]]]]
-'''
 
 origin_url = default_origin
 output_file_name = default_output_file_name
