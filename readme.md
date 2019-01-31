@@ -35,7 +35,7 @@ Do a web crawl outward from Wikipedia:
 `python .\crawler.py http://wikipedia.com`
 
 Web crawl outwards from http://example.com, outputting the results to
-example.crawl.txt, outputting the statistics to example.stats.txt,
+example-crawl.txt, outputting the statistics to example-stats.txt,
 traversing at most 20 links, with a timeout of 120 seconds, spawning at
 most 5 threads to crawl.
 
