@@ -1,5 +1,5 @@
 # Scraping output
-out.txt
+out_graph.txt
 
 # Build files
 crawler.egg-info/
@@ -20,3 +20,7 @@ doc/
 src/
 pip-selfcheck.json
 pyvenv.cfg
+
+# Other
+*.docx
+*.tmp

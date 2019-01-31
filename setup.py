@@ -7,10 +7,11 @@ setup(
     author='Shayaan Syed Ali',
     author_email='shayaan.syed.ali@gmail.com',
     install_requires=[
-        'scrapy',
         'validators',
         'lxml',
-        'requests'
+        'requests',
+        'networkx',
+        'matplotlib'
     ],
     packages=find_packages()
 )

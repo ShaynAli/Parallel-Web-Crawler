@@ -1,0 +1,5 @@
+validators
+lxml
+requests
+networkx
+matplotlib
