@@ -1,6 +1,6 @@
 # Parallel Web Crawler
 
-A simple web crawler, originally made for CS 4438.
+A simple web crawler.
 
 Please open an issue on Github if you encounter errors or would like to
 request a feature.
@@ -16,8 +16,8 @@ This implementation crawls absolute and relative URLs.
 ## Usage
 
 `
-python .\crawler.py [origin_url [output_file_name [statistics_file_name [max_n_links [timeout
-[max_n_threads]]]]]]
+python .\crawler.py [origin_url [output_file_name [statistics_file_name
+[max_n_links [timeout [max_n_threads]]]]]]
 `
 
 Default values:
