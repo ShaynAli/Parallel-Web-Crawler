@@ -15,7 +15,7 @@ default_output_file_name = 'graph.out'
 default_statistics_file_name = 'stats.out'
 default_max_n_links = 100
 default_timeout = 60
-default_max_n_threads = 10
+default_max_n_threads = 4
 
 origin_url = default_origin
 output_file_name = default_output_file_name
