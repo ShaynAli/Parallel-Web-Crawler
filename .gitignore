@@ -1,12 +1,3 @@
-# Scraping output
-*.out
-
-# Build files
-crawler.egg-info/
-crawler.egg-info/
-build/
-dist/
-
 # IDE files
 .idea/
 .vs/
@@ -14,14 +5,3 @@ dist/
 
 # Virtual environment
 venv/
-Lib/
-Scripts/
-doc/
-src/
-pip-selfcheck.json
-pyvenv.cfg
-
-# Other
-*.docx
-*.pdf
-*.tmp
