@@ -1,17 +1,14 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt', 'r+') as requirements_file:
+    requirements = requirements_file.read().splitlines()
+
 setup(
     name='Parallel Web Crawler',
-    version='1.0',
-    description='A web crawler for CS 4438 at the University of Western Ontario',
+    version='2.0',
+    description='Crawls the web, like a spider. Uses threads, also like a spider.',
     author='Shayaan Syed Ali',
     author_email='shayaan.syed.ali@gmail.com',
-    install_requires=[
-        'validators',
-        'lxml',
-        'requests',
-        'networkx',
-        'matplotlib'
-    ],
+    install_requires=requirements,
     packages=find_packages()
 )
