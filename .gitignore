@@ -5,3 +5,6 @@
 
 # Virtual environment
 venv/
+
+# Save files
+*.save
