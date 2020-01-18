@@ -5,7 +5,7 @@ with open('requirements.txt', 'r+') as requirements_file:
 
 setup(
     name='Parallel Web Crawler',
-    version='2.0',
+    version='2.1',
     description='Crawls the web, like a spider. Uses threads, also like a spider.',
     author='Shayaan Syed Ali',
     author_email='shayaan.syed.ali@gmail.com',
