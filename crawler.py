@@ -5,6 +5,7 @@ import queue
 import threading
 import time
 import contextlib
+import collections
 
 import utils
 
@@ -57,63 +58,88 @@ def urls_on_page(url):
     return url_extractor.links()
 
 
-def crawl(url, url_graph, url_graph_lock):
+def crawl(url, url_graph):
     """Crawls the given URL and updates the url_graph, uses the url_graph_lock for synchronized access
     :returns All newly found URLs which are not already in the url_graph
     """
-    
     linked_urls = urls_on_page(url)
-
-    with url_graph_lock:
-        url_graph[url] = linked_urls
-        return [linked_url for linked_url in linked_urls if linked_url not in url_graph]
-
-
-_print_lock = threading.Lock()
-
-
-def sync_print(msg, *args, **kwargs):
-    with _print_lock:
-        print(msg, *args, **kwargs)
-        
-        
-class StatefulThread(threading.Thread):
+    url_graph[url] = linked_urls
+    return [linked_url for linked_url in linked_urls if linked_url not in url_graph]
     
-    def __init__(self, target, start_immediately=False, *args, **kwargs):
+
+def crawl_worker(url_boundary_queue, url_graph):
+    url = url_boundary_queue.get()
+    utils.good_sync_print(f'Crawling {url}')
+    try:
+        linked_urls = crawl(url, url_graph)
+        utils.good_sync_print(f'Finished crawling {url}')
+        url_boundary_queue.task_done()
+        for linked_url in linked_urls:
+            url_boundary_queue.put(linked_url)
+    except Exception as e:
+        utils.error_sync_print(f'Failed to crawl {url}, encountered {e}')
+        raise e
+    
+
+class SynchronizedLoopingThread(threading.Thread):
+    
+    def __init__(self, running_event, target, args=None, kwargs=None, daemon=False, error_cooldown=1):
+        super().__init__(target=target, daemon=daemon, args=args or (), kwargs=kwargs or {})
+        self.running_event = running_event
+        self.error_cooldown = error_cooldown
+        
+    def run(self):
+        while self.running_event.is_set():
+            try:
+                # This is a looped version of the same invocation which threading.Thread makes and these self.etc
+                #   members are populated by the call to super().__init__()
+                # noinspection PyUnresolvedReferences
+                self._target(*self._args, **self._kwargs)
+            except Exception as e:
+                utils.error_sync_print(f'{self.__repr__()} encountered {e}')
+                time.sleep(self.error_cooldown)
+            
+            
+class SynchronizedDict(dict):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.running = start_immediately
-
-
-def crawl_worker_task(running_event, url_boundary_queue, url_graph, url_graph_lock):
-    while running_event.is_set():
-        url = url_boundary_queue.get()
-        sync_print(f'Crawling {url}')
-        try:
-            linked_urls = crawl(url, url_graph, url_graph_lock)
-            sync_print(f'Finished crawling {url}')
-            url_boundary_queue.task_done()
-            for linked_url in linked_urls:
-                url_boundary_queue.put(linked_url)
-        except Exception as e:
-            sync_print(f'Failed to crawl {url}, encountered {e}')
+        self.item_lock = collections.defaultdict(threading.Lock)
+        
+    def __setitem__(self, key, value):
+        with self.item_lock[key]:
+            super().__setitem__(key, value)
+            
+    # region Pickle overrides
+    
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['item_lock']
+        return state
+        
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.item_lock = collections.defaultdict(threading.Lock)
+        
+    # endregion
 
     
 def main(start_url, thread_limit, path):
+    
     url_boundary_queue = queue.Queue()
     url_boundary_queue.put(start_url)
-    url_graph = dict()
-    urls_graph_lock = threading.Lock()
+    url_graph = SynchronizedDict()
     
     if path:
         with contextlib.suppress(FileNotFoundError, EOFError):
+            utils.info_sync_print(f'Loading from {path}')
             url_boundary_queue, url_graph = utils.load(path)
-            sync_print(f'Loaded from {path}')
             
     running_event = threading.Event()
     
-    threads = [threading.Thread(target=crawl_worker_task,
-                                args=(running_event, url_boundary_queue, url_graph, urls_graph_lock),
-                                daemon=True) for _ in range(int(thread_limit))]
+    threads = [SynchronizedLoopingThread(running_event=running_event,
+                                         target=crawl_worker,
+                                         args=(url_boundary_queue, url_graph),
+                                         daemon=True) for _ in range(int(thread_limit))]
     
     running_event.set()
     for thread in threads:
@@ -121,16 +147,17 @@ def main(start_url, thread_limit, path):
         
     try:
         while True:
-            time.sleep(1)
+            time.sleep(10)
+            utils.info_sync_print(f'{len(url_graph)} linked crawled')
     except KeyboardInterrupt:
-        sync_print('Waiting for threads to finish executing')
+        utils.warning_sync_print('Waiting for threads to finish executing')
         running_event.clear()
-        while any([thread.is_alive() for thread in threads]):
+        while any(thread.is_alive() for thread in threads):
             continue
     
     if path:
         utils.save(url_boundary_queue, url_graph, path)
-        sync_print(f'Saved to {path}')
+        utils.info_sync_print(f'Saved to {path}')
 
     # TODO:
     #   - Visualization
@@ -138,7 +165,7 @@ def main(start_url, thread_limit, path):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Crawls the web')
+    parser = argparse.ArgumentParser(description='Crawls the web, like a spider. Uses threads, also like a spider.')
     parser.add_argument('-s', '--start-url', default=DEFAULT_START_URL,
                         help=f'the starting point of the crawl, defaults to {DEFAULT_START_URL}')
     parser.add_argument('-t', '--thread-limit', default=DEFAULT_THREAD_LIMIT,
