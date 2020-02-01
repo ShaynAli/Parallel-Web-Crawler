@@ -83,7 +83,7 @@ def crawl_worker(url_boundary_queue, url_graph):
 
 class SynchronizedLoopingThread(threading.Thread):
     
-    def __init__(self, running_event, target, args=None, kwargs=None, daemon=False, error_cooldown=1):
+    def __init__(self, running_event, target, args=None, kwargs=None, daemon=False, error_cooldown=10):
         super().__init__(target=target, daemon=daemon, args=args or (), kwargs=kwargs or {})
         self.running_event = running_event
         self.error_cooldown = error_cooldown
@@ -103,27 +103,37 @@ class SynchronizedLoopingThread(threading.Thread):
 class SynchronizedDict(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.item_lock = collections.defaultdict(threading.Lock)
+        self._item_lock = collections.defaultdict(threading.Lock)
         
     def __setitem__(self, key, value):
         with self.item_lock[key]:
             super().__setitem__(key, value)
+        del self.item_lock[key]
+
+    @property
+    def item_lock(self):
+        try:
+            return self._item_lock
+        except AttributeError:
+            self._item_lock = collections.defaultdict(threading.Lock)
+            return self._item_lock
             
     # region Pickle overrides
     
     def __getstate__(self):
-        state = self.__dict__.copy()
-        del state['item_lock']
+        state = vars(self).copy()
+        del state['_item_lock']  # Lock objects cannot be Pickled
         return state
         
     def __setstate__(self, state):
-        self.__dict__.update(state)
-        self.item_lock = collections.defaultdict(threading.Lock)
+        vars(self).update(state)
         
     # endregion
 
     
-def main(start_url, thread_limit, path):
+def main(start_url, thread_limit, path, colours_disabled):
+    
+    utils.ENABLE_CONSOLE_COLOURS = not colours_disabled
     
     url_boundary_queue = queue.Queue()
     url_boundary_queue.put(start_url)
@@ -173,5 +183,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--path', default=DEFAULT_PATH,
                         help='if provided, crawling results will be loaded and saved to this file, defaults to '
                              f'{DEFAULT_PATH}')
+    parser.add_argument('-c', '--colours-disabled', action='store_true',
+                        help='if provided, disables colorful console output')
     parser_args = parser.parse_args()
     main(**vars(parser_args))
