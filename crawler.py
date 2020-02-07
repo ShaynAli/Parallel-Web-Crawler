@@ -52,7 +52,7 @@ def urls_on_page(url):
     with request.urlopen(url) as response:
         # Some URLs may return other, valid responses, but they are not currently supported
         if not isinstance(response, client.HTTPResponse):
-            raise URLRetrievalFailure()
+            raise URLRetrievalFailure(f'URL returned a non-HTTP response: {response}')
         body = response.read()
     url_extractor = URLExtractor(url=url, data=body.decode())
     return url_extractor.links()
